@@ -1,0 +1,51 @@
+// AddTwoNumbers Flow Service
+// Adds two numbers together and returns the result
+
+interface addtwonumbers;
+
+service AddTwoNumbers (
+  input {
+    String number1 [required];
+    String number2 [required];
+  }
+  output {
+    String result;
+  }
+) {
+  // Add the two numbers using pub.math:addInts
+  INVOKE pub.math:addInts {
+    comment: "Add number1 and number2";
+    label: "Math";
+    input {
+      mapSource {
+        String number1;
+        String number2;
+      }
+      mapTarget[addInts] {
+        String num1;
+        String num2;
+      }
+      copy number1 -> num1;
+      copy number2 -> num2;
+    }
+    output {
+      mapSource[addInts] {
+        String value;
+      }
+      mapTarget {
+        String result;
+      }
+      copy value -> result;
+    }
+  };
+
+  // Drop variables no longer needed
+  MAP {
+    comment: "Drop intermediate variables from pipeline";
+    drop value;
+    drop num1;
+    drop num2;
+    drop number1;
+    drop number2;
+  };
+}

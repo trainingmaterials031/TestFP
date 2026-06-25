@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<webMethodsTestSuite description="ConvertCSVToJSON TestSuite" name="convertCSVToJSONTestSuite">
+    <webMethodsTestCase description="Test 1: Multiple transfers with different currencies" name="test1_multiple_transfers">
+        <service folder="project.dp_vibecodingdemo.integrations" name="ConvertCSVToJSON">
+            <input>
+                <file filename="test1_multiple_transfers-input.xml"/>
+            </input>
+            <expected>
+                <file filename="test1_multiple_transfers-result.xml"/>
+            </expected>
+        </service>
+    </webMethodsTestCase>
+    <webMethodsTestCase description="Test 2: Single transfer" name="test2_single_transfer">
+        <service folder="project.dp_vibecodingdemo.integrations" name="ConvertCSVToJSON">
+            <input>
+                <file filename="test2_single_transfer-input.xml"/>
+            </input>
+            <expected>
+                <file filename="test2_single_transfer-result.xml"/>
+            </expected>
+        </service>
+    </webMethodsTestCase>
+    <webMethodsTestCase description="Test 3: Empty data (header only)" name="test3_empty_data">
+        <service folder="project.dp_vibecodingdemo.integrations" name="ConvertCSVToJSON">
+            <input>
+                <file filename="test3_empty_data-input.xml"/>
+            </input>
+            <expected>
+                <file filename="test3_empty_data-result.xml"/>
+            </expected>
+        </service>
+    </webMethodsTestCase>
+    <webMethodsTestCase description="Test 4: Large amounts with decimals" name="test4_large_amounts">
+        <service folder="project.dp_vibecodingdemo.integrations" name="ConvertCSVToJSON">
+            <input>
+                <file filename="test4_large_amounts-input.xml"/>
+            </input>
+            <expected>
+                <file filename="test4_large_amounts-result.xml"/>
+            </expected>
+        </service>
+    </webMethodsTestCase>
+    <webMethodsTestCase description="Test 5: Different date formats" name="test5_date_formats">
+        <service folder="project.dp_vibecodingdemo.integrations" name="ConvertCSVToJSON">
+            <input>
+                <file filename="test5_date_formats-input.xml"/>
+            </input>
+            <expected>
+                <file filename="test5_date_formats-result.xml"/>
+            </expected>
+        </service>
+    </webMethodsTestCase>
+    <webMethodsTestCase description="Test 6: Various currency codes" name="test6_currency_codes">
+        <service folder="project.dp_vibecodingdemo.integrations" name="ConvertCSVToJSON">
+            <input>
+                <file filename="test6_currency_codes-input.xml"/>
+            </input>
+            <expected>
+                <file filename="test6_currency_codes-result.xml"/>
+            </expected>
+        </service>
+    </webMethodsTestCase>
+</webMethodsTestSuite>
+
+<!-- Made with Bob -->

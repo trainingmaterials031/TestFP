@@ -1,0 +1,261 @@
+// GetChuckNorrisJoke Flow Service
+// Retrieves a random Chuck Norris joke from a specified category using the Chuck Norris API
+
+interface chucknorrisjoke;
+
+service GetChuckNorrisJoke (
+  input {
+    String category [required];
+  }
+  output {
+    String joke;
+    String jokeId;
+    String jokeUrl;
+    String success;
+    String errorMessage;
+  }
+) {
+  // Initialize success flag
+  MAP {
+    comment: "Initialize success flag";
+    set success = "true";
+    set errorMessage = "";
+  };
+
+  // Build the API URL with category parameter
+  MAP {
+    comment: "Build API URL with category parameter";
+    mapSource {
+      String category;
+    }
+    mapTarget {
+      String apiUrl;
+    }
+    set (variable) apiUrl = "https://api.chucknorris.io/jokes/random?category=%category%";
+  };
+
+  // Call the Chuck Norris API
+  TRY {
+    INVOKE pub.client:http {
+      comment: "Call Chuck Norris API to get a random joke";
+      label: "Client";
+      timeout: 30;
+      input {
+        mapSource {
+          String apiUrl;
+        }
+        mapTarget[httpInput] {
+          String url;
+          String method;
+          String loadAs;
+        }
+        copy apiUrl -> url;
+        set method = "get";
+        set loadAs = "bytes";
+      }
+      output {
+        mapSource[httpOutput] {
+          record body {
+            Object bytes;
+          };
+          record header {
+            String status;
+            String statusMessage;
+          };
+        }
+        mapTarget {
+          Object responseBytes;
+          String httpStatus;
+          String httpStatusMessage;
+        }
+        copy body/bytes -> responseBytes;
+        copy header/status -> httpStatus;
+        copy header/statusMessage -> httpStatusMessage;
+      }
+    };
+
+    // Drop HTTP input/output variables
+    MAP {
+      comment: "Drop HTTP variables";
+      drop url;
+      drop method;
+      drop loadAs;
+      drop body;
+      drop header;
+    };
+
+    // Convert response bytes to string
+    INVOKE pub.string:bytesToString {
+      comment: "Convert response bytes to string";
+      label: "String";
+      input {
+        mapSource {
+          Object responseBytes;
+        }
+        mapTarget[bytesToStringInput] {
+          Object bytes;
+        }
+        copy responseBytes -> bytes;
+      }
+      output {
+        mapSource[bytesToStringOutput] {
+          String string;
+        }
+        mapTarget {
+          String jsonResponse;
+        }
+        copy string -> jsonResponse;
+      }
+    };
+
+    // Drop bytesToString variables
+    MAP {
+      comment: "Drop bytesToString variables";
+      drop responseBytes;
+      drop bytes;
+      drop string;
+    };
+
+    // Parse JSON response with numbers as strings
+    INVOKE pub.json:jsonStringToDocument {
+      comment: "Parse JSON response";
+      label: "Json";
+      input {
+        mapSource {
+          String jsonResponse;
+        }
+        mapTarget[jsonStringToDocumentInput] {
+          String jsonString;
+          String decodeRealAsDouble;
+          String decodeRealAsString;
+          String decodeIntegerAsLong;
+        }
+        copy jsonResponse -> jsonString;
+        set decodeRealAsDouble = "false";
+        set decodeRealAsString = "true";
+        set decodeIntegerAsLong = "false";
+      }
+      output {
+        mapSource[jsonStringToDocumentOutput] {
+          record document {
+            String id;
+            String value;
+            String url;
+            String[] categories;
+          };
+        }
+        mapTarget {
+          record jokeData {
+            String id;
+            String value;
+            String url;
+            String[] categories;
+          };
+        }
+        copy document -> jokeData;
+      }
+    };
+
+    // Drop JSON parsing variables
+    MAP {
+      comment: "Drop JSON parsing variables";
+      drop jsonResponse;
+      drop jsonString;
+      drop document;
+    };
+
+    // Extract joke details from parsed JSON
+    MAP {
+      comment: "Extract joke details";
+      mapSource {
+        record jokeData {
+          String id;
+          String value;
+          String url;
+        };
+      }
+      mapTarget {
+        String joke;
+        String jokeId;
+        String jokeUrl;
+      }
+      copy jokeData/value -> joke;
+      copy jokeData/id -> jokeId;
+      copy jokeData/url -> jokeUrl;
+    };
+
+    // Drop jokeData after extraction
+    MAP {
+      comment: "Drop jokeData record";
+      drop jokeData;
+    };
+
+    // Log successful retrieval
+    INVOKE pub.flow:debugLog {
+      comment: "Log successful joke retrieval";
+      label: "Flow";
+      input {
+        mapSource {
+          String jokeId;
+        }
+        mapTarget[debugLogInput] {
+          String function;
+          String message;
+        }
+        set function = "GetChuckNorrisJoke";
+        set (variable) message = "Successfully retrieved joke with ID: %jokeId%";
+      }
+    };
+
+    // Drop debugLog variables
+    MAP {
+      comment: "Drop debugLog variables";
+      drop function;
+      drop message;
+    };
+
+  } CATCH {
+    // Handle API call errors
+    MAP {
+      comment: "Set error response";
+      set success = "false";
+      set (variable) errorMessage = "Failed to retrieve Chuck Norris joke from API";
+      set joke = "";
+      set jokeId = "";
+      set jokeUrl = "";
+    };
+
+    // Log error
+    INVOKE pub.flow:debugLog {
+      comment: "Log error";
+      label: "Flow";
+      input {
+        mapSource {
+          String errorMessage;
+        }
+        mapTarget[debugLogInput] {
+          String function;
+          String message;
+        }
+        set function = "GetChuckNorrisJoke";
+        copy errorMessage -> message;
+      }
+    };
+
+    // Drop debugLog variables
+    MAP {
+      comment: "Drop debugLog variables";
+      drop function;
+      drop message;
+    };
+  };
+
+  // Drop input parameters and intermediate variables
+  MAP {
+    comment: "Drop input and intermediate variables";
+    drop category;
+    drop apiUrl;
+    drop httpStatus;
+    drop httpStatusMessage;
+  };
+}

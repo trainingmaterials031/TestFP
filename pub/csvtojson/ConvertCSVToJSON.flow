@@ -1,0 +1,352 @@
+// ConvertCSVToJSON Flow Service
+// Converts CSV bank transfer data to JSON format with timing information
+
+interface csvtojson;
+
+service ConvertCSVToJSON (
+  input {
+    String csvData [required];
+  }
+  output {
+    String jsonResult;
+    String success;
+    String errorMessage;
+  }
+) {
+  // Capture start time in nanoseconds
+  INVOKE pub.date:currentNanoTime {
+    comment: "Get start time in nanoseconds";
+    label: "Date";
+    output {
+      mapSource[currentNanoTimeOutput] {
+        Object nanoTime;
+      }
+      mapTarget {
+        Object startNanoTime;
+      }
+      copy nanoTime -> startNanoTime;
+    }
+  };
+
+  // Drop nanoTime variable
+  MAP {
+    comment: "Drop nanoTime variable";
+    drop nanoTime;
+  };
+
+  // Get current date/time as ISO 8601 string
+  INVOKE pub.date:getCurrentDateString {
+    comment: "Get current date/time in ISO 8601 format";
+    label: "Date";
+    input {
+      mapTarget[getCurrentDateStringInput] {
+        String pattern;
+      }
+      set pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'";
+    }
+    output {
+      mapSource[getCurrentDateStringOutput] {
+        String value;
+      }
+      mapTarget {
+        String startDateTime;
+      }
+      copy value -> startDateTime;
+    }
+  };
+
+  // Drop getCurrentDateString variables
+  MAP {
+    comment: "Drop getCurrentDateString variables";
+    drop pattern;
+    drop value;
+  };
+
+  // Initialize success flag
+  MAP {
+    comment: "Initialize success flag";
+    set success = "true";
+    set errorMessage = "";
+  };
+
+  // Split CSV data into lines using regex for newline
+  INVOKE pub.string:tokenize {
+    comment: "Split CSV data into lines";
+    label: "String";
+    input {
+      mapSource {
+        String csvData;
+      }
+      mapTarget[tokenizeInput] {
+        String inString;
+        String delim;
+        String useRegex;
+      }
+      copy csvData -> inString;
+      set delim = "\n";
+      set useRegex = "true";
+    }
+    output {
+      mapSource[tokenizeOutput] {
+        String[] valueList;
+      }
+      mapTarget {
+        String[] csvLines;
+      }
+      copy valueList -> csvLines;
+    }
+  };
+
+  // Drop tokenize variables
+  MAP {
+    comment: "Drop tokenize variables";
+    drop inString;
+    drop delim;
+    drop useRegex;
+    drop valueList;
+  };
+
+  // Initialize line counter to skip header row
+  MAP {
+    comment: "Initialize line counter to skip header row";
+    set lineCounter = "0";
+  };
+
+  // Process each CSV line and build transfer list
+  LOOP {
+    comment: "Process each CSV line";
+    inputArray: "csvLines";
+
+    // Increment line counter
+    INVOKE pub.math:addInts {
+      comment: "Increment line counter";
+      label: "Math";
+      input {
+        mapSource {
+          String lineCounter;
+        }
+        mapTarget[addInts] {
+          String num1;
+          String num2;
+        }
+        copy lineCounter -> num1;
+        set num2 = "1";
+      }
+      output {
+        mapSource[addInts] {
+          String value;
+        }
+        mapTarget {
+          String lineCounter;
+        }
+        copy value -> lineCounter;
+      }
+    };
+
+    // Drop addInts variables
+    MAP {
+      comment: "Drop addInts variables";
+      drop num1;
+      drop num2;
+      drop value;
+    };
+
+    // Process only data lines (skip header when lineCounter == "1")
+    IF (lineCounter != "1") {
+      // Split line by comma using regex
+      INVOKE pub.string:tokenize {
+        comment: "Split line by comma";
+        label: "String";
+        input {
+          mapSource {
+            String csvLines;
+          }
+          mapTarget[tokenizeInput] {
+            String inString;
+            String delim;
+            String useRegex;
+          }
+          copy csvLines -> inString;
+          set delim = ",";
+          set useRegex = "true";
+        }
+        output {
+          mapSource[tokenizeOutput] {
+            String[] valueList;
+          }
+          mapTarget {
+            String[] fields;
+          }
+          copy valueList -> fields;
+        }
+      };
+
+      // Drop tokenize variables
+      MAP {
+        comment: "Drop tokenize variables";
+        drop inString;
+        drop delim;
+        drop useRegex;
+        drop valueList;
+      };
+
+      // Create transfer record from CSV fields
+      MAP {
+        comment: "Create transfer record structure";
+        mapTarget {
+          record transfer {
+            String date;
+            String from_account;
+            String to_account;
+            String amount;
+            String currency;
+            String reference;
+          };
+        }
+        set (variable) transfer/date = "%fields[0]%";
+        set (variable) transfer/from_account = "%fields[1]%";
+        set (variable) transfer/to_account = "%fields[2]%";
+        set (variable) transfer/amount = "%fields[3]%";
+        set (variable) transfer/currency = "%fields[4]%";
+        set (variable) transfer/reference = "%fields[5]%";
+      };
+
+      // Drop fields array after use
+      MAP {
+        comment: "Drop fields array";
+        drop fields;
+      };
+
+      // Append transfer to list
+      INVOKE pub.list:appendToDocumentList {
+        comment: "Add transfer to list";
+        label: "List";
+        input {
+          mapSource {
+            recordList toList;
+            record transfer;
+          }
+          mapTarget[appendInput] {
+            recordList toList;
+            record fromItem;
+          }
+          copy toList -> toList;
+          copy transfer -> fromItem;
+        }
+        output {
+          mapSource[appendOutput] {
+            recordList toList;
+          }
+          mapTarget {
+            recordList toList;
+          }
+          copy toList -> toList;
+        }
+      };
+
+      // Drop transfer and fromItem after appending
+      MAP {
+        comment: "Drop transfer record";
+        drop transfer;
+        drop fromItem;
+      };
+    };
+  };
+
+  // Drop loop variables
+  MAP {
+    comment: "Drop loop variables";
+    drop csvLines;
+    drop lineCounter;
+  };
+
+  // Calculate elapsed time
+  INVOKE pub.date:elapsedNanoTime {
+    comment: "Calculate execution duration";
+    label: "Date";
+    input {
+      mapSource {
+        Object startNanoTime;
+      }
+      mapTarget[elapsedNanoTimeInput] {
+        Object nanoTime;
+      }
+      copy startNanoTime -> nanoTime;
+    }
+    output {
+      mapSource[elapsedNanoTimeOutput] {
+        Object elapsedNanoTime;
+        String elapsedNanoTimeStr;
+      }
+      mapTarget {
+        String duration;
+      }
+      copy elapsedNanoTimeStr -> duration;
+    }
+  };
+
+  // Drop elapsedNanoTime variables
+  MAP {
+    comment: "Drop elapsedNanoTime variables";
+    drop startNanoTime;
+    drop nanoTime;
+    drop elapsedNanoTime;
+    drop elapsedNanoTimeStr;
+  };
+
+  // Create result document with transfers and metadata
+  MAP {
+    comment: "Create result document structure";
+    mapTarget {
+      record resultDoc {
+        String startDateTime;
+        String duration;
+        recordList transfers;
+      };
+    }
+    copy startDateTime -> resultDoc/startDateTime;
+    copy duration -> resultDoc/duration;
+    copy toList -> resultDoc/transfers;
+  };
+
+  // Drop toList after copying to result
+  MAP {
+    comment: "Drop toList";
+    drop toList;
+  };
+
+  // Convert result document to JSON string
+  INVOKE pub.json:documentToJSONString {
+    comment: "Convert result document to JSON string";
+    label: "Json";
+    input {
+      mapSource {
+        record resultDoc;
+      }
+      mapTarget[documentToJSONStringInput] {
+        record document;
+      }
+      copy resultDoc -> document;
+    }
+    output {
+      mapSource[documentToJSONStringOutput] {
+        String jsonString;
+      }
+      mapTarget {
+        String jsonResult;
+      }
+      copy jsonString -> jsonResult;
+    }
+  };
+
+  // Drop intermediate variables
+  MAP {
+    comment: "Drop intermediate variables";
+    drop resultDoc;
+    drop document;
+    drop jsonString;
+    drop startDateTime;
+    drop duration;
+    drop csvData;
+  };
+}
