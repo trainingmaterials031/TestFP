@@ -1,0 +1,20 @@
+service divideTwoNumbers (
+    input {
+        String num1 [required];
+        String num2 [required];
+    }
+    output {
+        String result;
+    }
+) {
+    // Divide num1 by num2
+    INVOKE pub.math:divideInts {
+        input {
+            copy num1 -> num1;
+            copy num2 -> num2;
+        };
+        output {
+            copy value -> result;
+        };
+    };
+}
