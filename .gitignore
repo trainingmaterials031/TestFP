@@ -1,0 +1,37 @@
+# ✅ Node.js dependencies (MCP server)
+node_modules/
+
+# ✅ Logs
+logs/
+*.log
+npm-debug.log*
+
+# ✅ OS files
+.DS_Store
+Thumbs.db
+
+# ✅ VS Code settings (optional)
+.vscode/
+
+# ✅ Environment variables (secrets)
+.env
+
+# ✅ Temporary / build files
+tmp/
+build/
+dist/
+
+# ✅ Integration Server runtime folders (DO NOT commit)
+packages/
+ns/
+code/
+lib/
+
+# ✅ Generated service files (IS creates these automatically)
+*.xml
+*.ndf
+*.idf
+
+# ✅ Backup / temp files
+*.bak
+*.swp

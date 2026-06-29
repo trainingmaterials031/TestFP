@@ -1,0 +1,36 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// webMethods JDBC Adapter Service DSL
+// Template  : DeleteSQL
+// Description: Deletes a student record from ldev.student by student_id.
+//              The student_id is supplied as a pipeline parameter.
+// ─────────────────────────────────────────────────────────────────────────────
+
+adapterService deleteStudent {
+
+    connection : "connections:jdbcconn";
+    template   : DeleteSQL;
+
+    DELETE {
+
+        FROM : "ldev.student";
+
+        WHERE {
+            student_id = parameter(student_id_1);
+        }
+
+    }
+
+    signature {
+
+        input {
+            Integer student_id_1 [required];
+        }
+
+        output {
+            // rowsAffected: number of rows deleted (1 on success, 0 if not found)
+            Integer rowsAffected;
+        }
+
+    }
+
+}

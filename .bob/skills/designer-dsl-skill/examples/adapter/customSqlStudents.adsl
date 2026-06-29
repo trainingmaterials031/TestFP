@@ -1,0 +1,55 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// webMethods JDBC Adapter Service DSL
+// Template  : CustomSQL
+// Description: Executes a hand-written SQL query that joins ldev.student and
+//              ldev.class, filtering by gender and class_name supplied as
+//              pipeline parameters (? placeholders).
+// ─────────────────────────────────────────────────────────────────────────────
+
+adapterService customSqlStudents {
+
+    connection : "connections:jdbcconn";
+    template   : CustomSQL;
+
+    CUSTOM_SQL {
+
+        sql : "SELECT s.student_id, s.first_name, s.last_name, s.gender, c.class_name FROM ldev.student s INNER JOIN ldev.class c ON s.class_id = c.class_id WHERE s.gender = ? AND c.class_name = ? ORDER BY s.last_name ASC";
+
+        // Input parameters bound to ? placeholders in order
+        INPUT_PARAMS {
+            gender_1     VARCHAR;
+            class_name_2 VARCHAR;
+        }
+
+        // Output columns returned by the query
+        OUTPUT_PARAMS {
+            student_id INTEGER;
+            first_name VARCHAR;
+            last_name  VARCHAR;
+            gender     VARCHAR;
+            class_name VARCHAR;
+        }
+
+        MAX_ROWS : 0;
+    }
+
+    signature {
+
+        input {
+            String gender_1     [required];
+            String class_name_2 [required];
+        }
+
+        output {
+            recordList results {
+                Integer student_id;
+                String  first_name;
+                String  last_name;
+                String  gender;
+                String  class_name;
+            };
+        }
+
+    }
+
+}

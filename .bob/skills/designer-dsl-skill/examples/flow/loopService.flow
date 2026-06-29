@@ -1,0 +1,73 @@
+service loopService (
+    input {
+        recordList students {
+            String name;
+            String phone;
+            record address {
+                String state;
+                String pin;
+            };
+        };
+    }
+    output {
+        String[] UID;
+    }
+) {
+    LOOP {
+     	comment: "Loop step example";
+        inputArray: "/students";
+        outputArray: "/UID";
+        MAP {
+            mapSource {
+                record students {
+                    String name;
+                    String phone;
+                    record address {
+                        String state;
+                        String pin;
+                    };
+                };
+                String UID;
+                String $iteration;
+            }
+            mapTarget {
+                record students {
+                };
+                String UID;
+            }
+            TRANSFORM pub.string:concat {
+                input {
+                    mapSource {
+                        record students {
+                            String name;
+                            String phone;
+                            record address {
+                                String state;
+                                String pin;
+                            };
+                        };
+                        String UID;
+                        String $iteration;
+                    }
+                    mapTarget[concatInput] {
+                        String inString1;
+                        String inString2;
+                    }
+                    copy students/name -> inString1;
+                    copy students/address/pin -> inString2;
+                }
+                output {
+                    mapSource[concatOutput] {
+                        String value;
+                    }
+                    mapTarget {
+                        record students {
+                        };
+                        String UID;
+                    }
+                    copy value -> UID;
+                }
+            };
+        };
+    };
+}

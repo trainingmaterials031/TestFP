@@ -1,0 +1,6 @@
+document StringListExample {
+    String OrderId;
+    String CustomerName;
+    String[] EmailAddresses;
+    String[] Tags;
+};

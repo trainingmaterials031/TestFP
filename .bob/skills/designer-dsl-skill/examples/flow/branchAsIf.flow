@@ -1,0 +1,38 @@
+interface abc.test;
+service branchAsIf (
+    input {
+        String score;
+    }
+    output {
+        String output;
+    }
+) {
+    BRANCH {
+    	comment: "If example using Branch step";
+        evaluateLabels: true;
+        SEQUENCE {
+            label: "%score%>=90";
+            MAP {
+                set output = "Grade: A";
+            };
+        };
+        SEQUENCE {
+            label: "%score%>=75";
+            MAP {
+                set output = "Grade: B";
+            };
+        };
+        SEQUENCE {
+            label: "%score%>=60";
+            MAP {
+                set output = "Grade: C";
+            };
+        };
+        SEQUENCE {
+            label: "$default";
+            MAP {
+                set output = "Grade: D";
+            };
+        };
+    };
+}

@@ -1,0 +1,89 @@
+service existService (
+    input {
+        String inString;
+    }
+    output {
+        String outString;
+    }
+) {
+    BRANCH {
+        comment: "Exit step example";
+        evaluateLabels: true;
+        SEQUENCE {
+            label: "%inString%==100";
+            EXIT {
+                comment: "Exit from complete parent";
+                exitFrom: "$parent";
+                signal: "SUCCESS";
+            };
+        };
+        SEQUENCE {
+            label: "%inString%==200";
+            REPEAT {
+                count: 10;
+                repeatOn: "SUCCESS";
+                BRANCH {
+                    evaluateLabels: true;
+                    SEQUENCE {
+                        label: "%$retries%==5";
+                        INVOKE pub.flow:debugLog {
+                            input {
+                                mapSource {
+                                    String $retries;
+                                    String inString;
+                                }
+                                mapTarget[debugLogInput] {
+                                    String message;
+                                    String function;
+                                    String level;
+                                }
+                                copy $retries -> message;
+                                set function = ">>>";
+                                set level = Info;
+                            }
+                        };
+                        MAP {
+                            mapTarget {
+                                String message;
+                                String function;
+                                String level;
+                                String $retries;
+                                String inString;
+                                String exitMessage;
+                            }
+                            set exitMessage = "Exiting from flow";
+                        };
+                        EXIT {
+                            comment: "Exit from complete flow";
+                            exitFrom: "$flow";
+                            signal: "SUCCESS";
+                        };
+                    };
+                };
+            };
+            MAP {
+                mapTarget {
+                    String message;
+                    String function;
+                    String level;
+                    String $retries;
+                    String inString;
+                    String exitMessage;
+                }
+                set exitMessage = "Outside Repeat step";
+            };
+        };
+    };
+    MAP {
+        mapTarget {
+            String message;
+            String function;
+            String level;
+            String $retries;
+            String inString;
+            String outString;
+            String exitMessage;
+        }
+        set outString = "Last step";
+    };
+}

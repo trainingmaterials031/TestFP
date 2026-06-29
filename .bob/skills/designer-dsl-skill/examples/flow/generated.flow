@@ -1,0 +1,32 @@
+service SendEmail {
+  INVOKE email:sendBulkEmail {
+    input {
+      set recipients = ["recipient1@example.com", "recipient2@example.com"];
+      set subject = "Test Email";
+      set body = "This is a test email";
+    }
+    output {
+      copy $response -> $emailResponse;
+    }
+  };
+  LOOP {
+    inputArray: "recipients";
+    outputArray: "emailResults";
+    MAP {
+      set recipient = $recipients;
+    };
+    INVOKE email:sendEmail {
+      input {
+        set to = $recipient;
+        set subject = "Test Email";
+        set body = "This is a test email";
+      }
+      output {
+        copy $response -> $emailResult;
+      }
+    };
+    MAP {
+      copy $emailResult -> $emailResults;
+    };
+  };
+}

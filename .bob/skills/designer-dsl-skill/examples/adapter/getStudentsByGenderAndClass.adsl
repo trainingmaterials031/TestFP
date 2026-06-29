@@ -1,0 +1,60 @@
+adapterService getStudentsByGenderAndClass {
+
+    connection : "abc:mysql";
+    template   : SelectSQL;
+
+    SELECT {
+
+        // ── Tables ────────────────────────────────────────────────────────────
+        FROM {
+            s : "ldev.<current schema>.student";
+            c : "ldev.<current schema>.class";
+        }
+
+        // ── Join ──────────────────────────────────────────────────────────────
+        JOIN {
+            INNER s.class_id = c.class_id;
+        }
+
+        // ── Columns to retrieve ───────────────────────────────────────────────
+        COLUMNS {
+            s.student_id  AS student_id  INTEGER;    // java.lang.Integer
+            s.first_name  AS first_name  VARCHAR;    // java.lang.String
+            s.last_name   AS last_name   VARCHAR;    // java.lang.String
+            s.gender      AS gender      CHAR;       // java.lang.String
+            c.class_name  AS class_name  VARCHAR;    // java.lang.String
+        }
+
+        // ── WHERE conditions (using parameters) ───────────────────────────────
+        WHERE {
+            s.gender     = parameter(gender);
+            AND c.class_name = parameter(class_name);
+        }
+
+        // ── Query options ─────────────────────────────────────────────────────
+        MAX_ROWS      : 0;
+        QUERY_TIMEOUT : -1;
+
+    }
+
+    // ── Pipeline signature ────────────────────────────────────────────────────
+    signature {
+
+        input {
+           String gender;
+           String class_name;
+        }
+
+        output {
+            recordList results {
+                Integer student_id;
+                String  first_name;
+                String  last_name;
+                String  gender;
+                String  class_name;
+            };
+        }
+
+    }
+
+}

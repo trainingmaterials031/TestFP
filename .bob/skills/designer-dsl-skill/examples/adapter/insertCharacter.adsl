@@ -1,0 +1,71 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// webMethods JDBC Adapter Service DSL
+// Template  : InsertSQL
+// Description: Inserts a Game of Thrones character record into the characters table.
+//              Character data from the API (https://anapioficeandfire.com/api/characters)
+// ─────────────────────────────────────────────────────────────────────────────
+
+adapterService insertCharacter {
+
+    connection : "abc:mysql";
+    template   : InsertSQL;
+
+    INSERT {
+
+        INTO : "ldev.<current schema>.characters";
+
+        // Column definitions: columnName  jdbcType  FROM  pipelineFieldName
+        COLUMNS {
+            url         VARCHAR   FROM url;
+            name        VARCHAR   FROM name;
+            gender      VARCHAR   FROM gender;
+            culture     VARCHAR   FROM culture;
+            born        VARCHAR   FROM born;
+            died        VARCHAR   FROM died;
+            titles      TEXT      FROM titles;
+            aliases     TEXT      FROM aliases;
+            father      VARCHAR   FROM father;
+            mother      VARCHAR   FROM mother;
+            spouse      VARCHAR   FROM spouse;
+            allegiances TEXT      FROM allegiances;
+            books       TEXT      FROM books;
+            povBooks    TEXT      FROM povBooks;
+            tvSeries    TEXT      FROM tvSeries;
+            playedBy    TEXT      FROM playedBy;
+        }
+
+        RESULT {
+            field     : "rowsAffected";
+            fieldType : "java.lang.Integer";
+        }
+
+    }
+
+    signature {
+
+        input {
+            String  url         [required];
+            String  name        [optional];
+            String  gender      [optional];
+            String  culture     [optional];
+            String  born        [optional];
+            String  died        [optional];
+            String  titles      [optional];
+            String  aliases     [optional];
+            String  father      [optional];
+            String  mother      [optional];
+            String  spouse      [optional];
+            String  allegiances [optional];
+            String  books       [optional];
+            String  povBooks    [optional];
+            String  tvSeries    [optional];
+            String  playedBy    [optional];
+        }
+
+        output {
+            Integer rowsAffected;
+        }
+
+    }
+
+}

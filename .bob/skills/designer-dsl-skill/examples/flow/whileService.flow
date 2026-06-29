@@ -1,0 +1,65 @@
+service whileService (
+    input {
+        String count;
+    }
+    output {
+        String out;
+    }
+) {
+    MAP {
+        mapTarget {
+            String count;
+            String temp;
+        }
+        set temp = "1";
+    };
+    WHILE(count>temp) {
+     	maxIteration: 5;
+        INVOKE pub.math:addInts {
+            input {
+                mapSource {
+                    String count;
+                    String temp;
+                    String $iterationCount;
+                }
+                mapTarget[addIntsInput] {
+                    String num1;
+                    String num2;
+                }
+                set num2 = "1";
+                copy temp -> num1;
+            }
+            output {
+                mapSource[addIntsOutput] {
+                    String value;
+                }
+                mapTarget {
+                    String num1;
+                    String num2;
+                    String count;
+                    String temp;
+                    String value;
+                }
+                copy value -> temp;
+            }
+        };
+    }
+    MAP {
+        mapSource {
+            String num1;
+            String num2;
+            String count;
+            String temp;
+            String value;
+        }
+        mapTarget {
+            String count;
+            String out;
+        }
+        drop num1;
+        drop num2;
+        drop value;
+        copy value -> out;
+        drop temp;
+    };
+}

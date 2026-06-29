@@ -1,0 +1,63 @@
+service doUntilService (
+    output {
+        String result;
+    }
+) {
+    MAP {
+        mapTarget {
+            String n1;
+        }
+        set n1 = "1";
+    };
+    DO {
+     	maxIteration: 10;
+    	SEQUENCE{
+    		MAP{
+    			drop n1;
+    		};
+    	};
+        INVOKE pub.math:addInts {
+            input {
+                mapSource {
+                    String n1;
+                    String $iterationCount;
+                }
+                mapTarget[addIntsInput] {
+                    String num1;
+                    String num2;
+                }
+                copy n1 -> num1;
+                set num2 = "1";
+            }
+            output {
+                mapSource[addIntsOutput] {
+                    String value;
+                }
+                mapTarget {
+                    String num1;
+                    String num2;
+                    String n1;
+                    String value;
+                }
+                copy value -> n1;
+            }
+        };
+    } UNTIL( n1==3 );
+    MAP {
+        mapSource {
+            String num1;
+            String num2;
+            String n1;
+            String value;
+            String $iterationCount;
+        }
+        mapTarget {
+            String result;
+        }
+        copy n1 -> result;
+        drop value;
+        drop n1;
+        drop num1;
+        drop num2;
+    };
+}

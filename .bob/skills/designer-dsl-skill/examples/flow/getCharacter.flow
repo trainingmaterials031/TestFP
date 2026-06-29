@@ -1,0 +1,44 @@
+interface jdbc;
+service getCharacter (
+    input {
+        String characterId;
+    }
+    output {
+        String responseBody;
+        Object characterData;
+        String errorMessage;
+        String status;
+    }
+) {
+    TRY {
+        INVOKE pub.client:http {
+            input {
+                set url = "https://anapioficeandfire.com/api/characters/581";
+                set method = "GET";
+                set timeout = "30000";
+                set loadAs = "stream";
+            }
+        };
+        INVOKE pub.io:streamToString {
+            input {
+                copy body/stream -> inputStream;
+            }
+        };
+        INVOKE pub.json:jsonStringToDocument {
+            input {
+                copy string -> jsonString;
+            }
+        };
+        MAP {
+            copy string -> responseBody;
+            copy document -> characterData;
+            set status = "SUCCESS";
+        };
+    }
+    CATCH {
+        MAP {
+            copy $error -> errorMessage;
+            set status = "FAILURE";
+        };
+    };
+}

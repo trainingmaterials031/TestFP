@@ -1,0 +1,15 @@
+interface testF;
+document nested {
+    String CustomerID;
+    String CustomerName;
+    record Address {
+        String Street;
+        String City;
+        String State;
+        String Zip;
+    };
+    record ContactInfo {
+        String Mobile;
+        String Email;
+    };
+};

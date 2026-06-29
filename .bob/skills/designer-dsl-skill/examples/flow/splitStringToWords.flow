@@ -1,0 +1,37 @@
+// FlowService: splitStringToWords
+// Description: Takes a string input and splits it into words using pub.string:tokenize
+// Input: inputString (String) - The string to split into words
+// Output: words (String[]) - Array of words extracted from the input string
+
+service splitStringToWords (
+    input {
+        String inputString [required];
+    }
+    output {
+        String[] words;
+    }
+) {
+    TRY {
+        // Use pub.string:tokenize to split the string into words
+        // Default delimiter is whitespace (space, tab, newline)
+        INVOKE pub.string:tokenize {
+            input {
+                copy inputString -> inString;
+                set delim = " ";
+            }
+            output {
+                copy valueList -> words;
+            }
+        };
+    }
+    CATCH {
+        MAP {
+            copy $error -> errorMessage;
+        };
+        
+        EXIT {
+            signal: "FAILURE";
+            failureMessage: "Failed to split string into words";
+        };
+    };
+}

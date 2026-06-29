@@ -1,0 +1,80 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// webMethods JDBC Adapter Service DSL
+// Template  : SelectSQL
+// Description: Retrieves all Game of Thrones characters from the database
+// ─────────────────────────────────────────────────────────────────────────────
+
+adapterService getAllCharacters {
+
+    connection : "abc:mysql";
+    template   : SelectSQL;
+
+    SELECT {
+
+        // ── Tables ────────────────────────────────────────────────────────────
+        FROM {
+            c : "ldev.<current schema>.characters";
+        }
+
+        // ── Columns to retrieve ───────────────────────────────────────────────
+        COLUMNS {
+            c.character_id  AS character_id  INTEGER;
+            c.url           AS url           VARCHAR;
+            c.name          AS name          VARCHAR;
+            c.gender        AS gender        VARCHAR;
+            c.culture       AS culture       VARCHAR;
+            c.born          AS born          VARCHAR;
+            c.died          AS died          VARCHAR;
+            c.titles        AS titles        TEXT;
+            c.aliases       AS aliases       TEXT;
+            c.father        AS father        VARCHAR;
+            c.mother        AS mother        VARCHAR;
+            c.spouse        AS spouse        VARCHAR;
+            c.allegiances   AS allegiances   TEXT;
+            c.books         AS books         TEXT;
+            c.povBooks      AS povBooks      TEXT;
+            c.tvSeries      AS tvSeries      TEXT;
+            c.playedBy      AS playedBy      TEXT;
+            c.created_at    AS created_at    TIMESTAMP;
+            c.updated_at    AS updated_at    TIMESTAMP;
+        }
+
+        // ── Query options ─────────────────────────────────────────────────────
+        MAX_ROWS      : 0;
+        QUERY_TIMEOUT : -1;
+
+    }
+
+    // ── Pipeline signature ────────────────────────────────────────────────────
+    signature {
+
+        input {
+        }
+
+        output {
+            recordList results {
+                Integer character_id;
+                String  url;
+                String  name;
+                String  gender;
+                String  culture;
+                String  born;
+                String  died;
+                String  titles;
+                String  aliases;
+                String  father;
+                String  mother;
+                String  spouse;
+                String  allegiances;
+                String  books;
+                String  povBooks;
+                String  tvSeries;
+                String  playedBy;
+                String  created_at;
+                String  updated_at;
+            };
+        }
+
+    }
+
+}

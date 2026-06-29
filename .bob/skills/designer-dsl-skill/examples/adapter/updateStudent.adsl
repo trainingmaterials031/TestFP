@@ -1,0 +1,50 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// webMethods JDBC Adapter Service DSL
+// Template  : UpdateSQL
+// Description: Updates email, phone and address for a specific student
+//              identified by student_id (pipeline parameter).
+//              The class is also updated via a pipeline parameter.
+// ─────────────────────────────────────────────────────────────────────────────
+
+adapterService updateStudent {
+
+    connection : "connections:jdbcconn";
+    template   : UpdateSQL;
+
+    UPDATE {
+
+        TABLE : "ldev.student";
+
+        // SET clause: columnName  jdbcType  =  valueSource(value)
+        SET {
+            email    VARCHAR   = parameter(email_1);
+            phone    VARCHAR   = parameter(phone_1);
+            address  TEXT      = parameter(address_1);
+            class_id INTEGER   = parameter(class_id_1);
+        }
+
+        // WHERE clause: identifies the row(s) to update
+        WHERE {
+            student_id = parameter(student_id_1);
+        }
+
+    }
+
+    signature {
+
+        input {
+            Integer student_id_1 [required];
+            String  email_1      [optional];
+            String  phone_1      [optional];
+            String  address_1    [optional];
+            Integer class_id_1   [optional];
+        }
+
+        output {
+            // rowsAffected: number of rows updated
+            Integer rowsAffected;
+        }
+
+    }
+
+}

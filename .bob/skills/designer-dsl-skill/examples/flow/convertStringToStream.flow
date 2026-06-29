@@ -1,0 +1,37 @@
+service StringToStream {
+  // Step 1: Initialize variables
+  MAP {
+    comment: "Initialize input and output variables";
+    set inputString = "Hello, World!";
+    set outputStream = "";
+  };
+  // Step 2: Convert string to stream
+  TRY {
+    INVOKE java:convertStringToStream {
+      input {
+        set input = $inputString;
+      }
+      output {
+        copy $output -> $outputStream;
+      }
+    };
+  }
+  CATCH {
+    failures: "java.IOException";
+    MAP {
+      comment: "Handle conversion error";
+      set errorMessage = "Failed to convert string to stream";
+    };
+  }
+  FINALLY {
+    MAP {
+      comment: "Cleanup temporary variables";
+      drop inputString;
+    };
+  };
+  // Step 3: output the result
+  MAP {
+    comment: "output the resulting stream";
+    set result = $outputStream;
+  };
+}

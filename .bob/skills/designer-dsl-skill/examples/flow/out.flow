@@ -1,0 +1,47 @@
+service myService (
+    input {
+        String str1;
+        String str2;
+    }
+    output {
+        String result;
+    }
+) {
+    TRY {
+        INVOKE pub.string:concat {
+            input {
+                mapSource {
+                    String str1;
+                    String str2;
+                }
+                mapTarget[concatInput] {
+                    String inString1;
+                    String inString2;
+                }
+                copy str1 -> inString1;
+                copy str2 -> inString2;
+            }
+            output {
+                mapSource[concatOutput] {
+                    String value;
+                }
+                mapTarget {
+                    String result;
+                }
+                copy value -> result;
+            }
+        };
+    } CATCH {
+        INVOKE pub.flow:getLastError {
+            output {
+                mapSource[errorOutput] {
+                    String error;
+                }
+                mapTarget {
+                    String error;
+                }
+                copy error -> error;
+            }
+        };
+    };
+}

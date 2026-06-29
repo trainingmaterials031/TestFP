@@ -1,0 +1,81 @@
+// FlatFile Schema: fixed-field-aliases
+// Description: Fixed-length format with field aliases and positional identifier
+// Sample Data: fixed-field-aliases-data.txt
+//
+// Structure:
+// - Format: Fixed-length
+// - Record size: 47 bytes
+// - Record identifier: Position 0, value "fixed_field_aliases"
+// - Fields with aliases (Name attribute in XML):
+//   * Field1 (alias: recordType): offset 0, length 2
+//   * Field2 (alias: custID): offset 2, length 5
+//   * name: offset 7, length 14
+//   * subfield1 (alias: city): offset 22, length 9
+//   * subfield2 (alias: state): offset 31, length 3
+//   * subfield3 (alias: pin): offset 34, length 6
+//   * amount: offset 41, length 9
+//
+// Note: Some fields have different internal names (ReferencedDefinition)
+//       vs display names (Name attribute)
+
+flatfile schema fixed_field_aliases {
+    type: FIXED_LENGTH;
+    
+    // Parser Configuration
+    parser {
+        type = "FixedLength"
+        recordSize = 47
+    }
+    
+    // Record Identifier
+    recordIdentifier {
+        type = "Positional"
+        offset = 0
+        values = ["fixed_field_aliases"]
+    }
+    
+    // Record Definition
+    record fixed_field_aliases {
+        field recordType {
+            data_type: String;
+            position: 0;
+            length: 2;
+        }
+        
+        field custID {
+            data_type: String;
+            position: 2;
+            length: 5;
+        }
+        
+        field name {
+            data_type: String;
+            position: 7;
+            length: 14;
+        }
+        
+        field city {
+            data_type: String;
+            position: 22;
+            length: 9;
+        }
+        
+        field state {
+            data_type: String;
+            position: 31;
+            length: 3;
+        }
+        
+        field pin {
+            data_type: String;
+            position: 34;
+            length: 6;
+        }
+        
+        field amount {
+            data_type: String;
+            position: 41;
+            length: 9;
+        }
+    }
+}

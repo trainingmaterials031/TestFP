@@ -1,0 +1,9 @@
+interface samplePackage;
+
+document StringExample {
+    String FirstName;
+    String LastName;
+    String Age;
+    String Email;
+    String PhoneNumber;
+};

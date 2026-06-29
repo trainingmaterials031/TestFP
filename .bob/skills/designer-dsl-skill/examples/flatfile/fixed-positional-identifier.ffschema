@@ -1,0 +1,68 @@
+// FlatFile Schema: fixed-positional-identifier
+// Description: Fixed-length format with positional record identifier
+// Sample Data: fixed-positional-identifier-data.txt
+//
+// Structure:
+// - Format: Fixed-length (hybrid with delimited records)
+// - Record identifier: NthField at position 0
+// - Fields with fixed positions and lengths:
+//   * recordType: offset 0, length 2
+//   * customerID: offset 2, length 5
+//   * name: offset 7, length 15
+//   * city: offset 22, length 12
+//   * pin: offset 34, length 6
+//   * amount: offset 40, length 10
+
+flatfile schema fixed_positional_identifier {
+    type: DELIMITED;
+    
+     delimiters {
+        record = "\r\n"
+    }
+    
+    // Record Identifier
+    recordIdentifier {
+        type = "NthField"
+        offset = 0
+        validateWithoutRecordIdentifier= true
+    }
+    
+    // Record Definition
+    record fixed_positional_identifier {
+        field recordType {
+            data_type: String;
+            position: 0;
+            length: 2;
+        }
+        
+        field customerID {
+            data_type: String;
+            position: 2;
+            length: 5;
+        }
+        
+        field name {
+            data_type: String;
+            position: 7;
+            length: 15;
+        }
+        
+        field city {
+            data_type: String;
+            position: 22;
+            length: 12;
+        }
+        
+        field pin {
+            data_type: String;
+            position: 34;
+            length: 6;
+        }
+        
+        field amount {
+            data_type: String;
+            position: 40;
+            length: 10;
+        }
+    }
+}

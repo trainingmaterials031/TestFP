@@ -1,0 +1,43 @@
+service repeatService (
+    output {
+        String count;
+    }
+) {
+    REPEAT {
+        comment: "Repeat Service example";
+        count: 10;
+        repeatInterval: 1;
+        repeatOn: "SUCCESS";
+        INVOKE pub.flow:debugLog {
+            input {
+                mapSource {
+                    String $retries;
+                }
+                mapTarget[debugLogInput] {
+                    String message;
+                    String function;
+                    String level;
+                }
+                copy $retries -> message;
+                set function = ">>>>";
+                set level = Info;
+            }
+        };
+        MAP {
+            mapSource {
+                String message;
+                String function;
+                String level;
+                String $retries;
+            }
+            mapTarget {
+                String count;
+                String message;
+                String function;
+                String level;
+                String $retries;
+            }
+            copy $retries -> count;
+        };
+    };
+}

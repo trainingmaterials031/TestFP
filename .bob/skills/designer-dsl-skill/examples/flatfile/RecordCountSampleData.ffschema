@@ -1,0 +1,70 @@
+// FlatFile Schema for RecordCountSampleData.txt
+// Header-Detail-Trailer format with global record identifier
+// Record delimiter: ! (exclamation mark)
+// Field delimiter: ~ (tilde)
+// 
+// Data: HDR~111!DTL~1~10~A!DTL~2~10~B!DTL~3~10~C!TLR~111~1!
+//
+// Record Identifier: Nth field at position 0
+// - HDR, DTL, TLR are at field position 0 (the record type identifier)
+// - Fields can explicitly specify their index position
+// - Index 0 is the identifier field (auto-excluded from output)
+// - Data fields start from index 1
+
+flatfile schema RecordCountBatch {
+    type: DELIMITED;
+    
+    delimiters {
+        record = "!"
+        field = "~"
+    }
+    
+    // Global record identifier - applies to all records
+    // Nth field at position 0 identifies the record type
+    recordIdentifier {
+        type = "NthField"
+        offset = 0
+        validateWithoutRecordIdentifier= false
+    }
+    
+    // Header record - identified by "HDR" at position 0
+    record HDR {
+        
+        field BatchID {
+            data_type: String;
+            index: 1;  // First data field
+        }
+    }
+    
+    // Detail record - identified by "DTL" at position 0
+    record DTL {
+        max_repeat: unlimited;
+        
+        
+        field SequenceNumber {
+            data_type: String;
+            index: 1;
+        }
+        field Quantity {
+            data_type: String;
+            index: 2;
+        }
+        field Code {
+            data_type: String;
+            index: 3;
+        }
+    }
+    
+    // Trailer record - identified by "TLR" at position 0
+    record TLR {
+        
+        field BatchID {
+            data_type: String;
+            index: 1;
+        }
+        field RecordCount {
+            data_type: String;
+            index: 2;
+        }
+    }
+}

@@ -1,0 +1,40 @@
+service breakService (
+    input {
+        String count;
+    }
+) {
+    MAP {
+        mapTarget {
+            String count;
+            String temp;
+        }
+        set temp = "0";
+    };
+    WHILE(temp<=count) {
+        comment: "continue example (skip number 3)";
+        IF(temp==3) {
+            BREAK;
+        };
+        INVOKE pub.math:addInts {
+            input {
+                mapSource {
+                    String count;
+                    String temp;
+                    String $iterationCount;
+                }
+                mapTarget[addIntsInput] {
+                    String num1;
+                    String num2;
+                }
+                copy temp -> num1;
+                set num2 = "1";
+            }
+            output {
+                mapSource[addIntsOutput] {
+                    String value;
+                }
+                copy value -> temp;
+            }
+        };
+    }
+}

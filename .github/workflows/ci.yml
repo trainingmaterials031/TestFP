@@ -1,0 +1,51 @@
+name: FlowPilot CI-CD POC
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: self-hosted   # ✅ IMPORTANT: runs on your local machine
+
+    steps:
+      # ✅ Step 1 — Checkout your code
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # ✅ Step 2 — Validate .flow and .md files
+      - name: Validate Flow Files
+        shell: powershell
+        run: |
+          Write-Output "✅ Validating .flow files..."
+
+          $flows = Get-ChildItem -Path pub -Recurse -Filter *.flow
+
+          foreach ($flow in $flows) {
+              $mdFile = $flow.FullName -replace "\.flow$", ".md"
+
+              if (!(Test-Path $mdFile)) {
+                  Write-Error "❌ Missing .md file for $($flow.FullName)"
+                  exit 1
+              }
+          }
+
+          Write-Output "✅ Validation Passed"
+
+      # ✅ Step 3 — Trigger Bob MCP deployment
+      - name: Deploy using Bob MCP
+        shell: powershell
+        run: |
+          Write-Output "🚀 Triggering deployment via Bob MCP..."
+
+          cd "C:\ProductManagement\BOB"
+
+          # ✅ Run MCP deployer
+          node ".bob\skills\webmethods-developer\deployer\mcp\lib\mcp-fsl-server.js"
+
+          Write-Output "✅ Deployment command executed"
+
+      # ✅ Step 4 — Basic success message
+      - name: Deployment Complete
+        run: echo "✅ FlowPilot deployment pipeline completed"
+``

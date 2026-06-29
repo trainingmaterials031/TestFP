@@ -1,0 +1,71 @@
+// FlatFile Schema: fixed-no-identifier
+// Description: Fixed-length format without record identifier (single record type)
+// Sample Data: fixed-no-identifier-data.txt
+//
+// Structure:
+// - Format: Fixed-length
+// - Record size: 50 bytes
+// - No record identifier (validates without record identifier)
+// - Fields with fixed positions and lengths:
+//   * recordType: offset 0, length 2
+//   * id: offset 2, length 5
+//   * name: offset 7, length 15
+//   * city: offset 22, length 12
+//   * pin: offset 34, length 6
+//   * amount: offset 40, length 10
+//
+// Note: Sample data contains multiple records concatenated without newlines
+
+flatfile schema fixed_no_identifier {
+    type: FIXED_LENGTH;
+    
+    // Parser Configuration
+    parser {
+        type = "FixedLength"
+        recordSize = 50
+    }
+    
+    // No record identifier - validates without record identifier
+    // validateWithoutRecordIdentifier is automatically set to true when no recordIdentifier block is present
+    recordIdentifier {
+        validateWithoutRecordIdentifier= true
+    }
+    // Record Definition
+    record fixed_no_identifier {
+        field recordType {
+            data_type: String;
+            position: 0;
+            length: 2;
+        }
+        
+        field id {
+            data_type: String;
+            position: 2;
+            length: 5;
+        }
+        
+        field name {
+            data_type: String;
+            position: 7;
+            length: 15;
+        }
+        
+        field city {
+            data_type: String;
+            position: 22;
+            length: 12;
+        }
+        
+        field pin {
+            data_type: String;
+            position: 34;
+            length: 6;
+        }
+        
+        field amount {
+            data_type: String;
+            position: 40;
+            length: 10;
+        }
+    }
+}

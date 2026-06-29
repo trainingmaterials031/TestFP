@@ -1,0 +1,301 @@
+// Flow Service: Send Email to List of Recipients using MIME Protocol
+// This service demonstrates sending emails with MIME content to multiple recipients
+
+service SendEmailToRecipients (
+    input {
+        String[] recipientList [required];
+        String subject [required];
+        String from [required];
+        String mailhost [required];
+        String mailhostPort;
+        String emailBody [required];
+        String[] ccList;
+        String[] bccList;
+        String contentType;
+        String charset;
+        record attachments {
+            String fileName;
+            Object content;
+            String contentType;
+        };
+        record auth {
+            String user;
+            String password;
+        };
+        record secure {
+            String protocol;
+            String trustStore;
+        };
+    }
+    output {
+        String status;
+        String message;
+        String[] successfulRecipients;
+        String[] failedRecipients;
+        record[] results {
+            String recipient;
+            String status;
+            String errorMessage;
+        };
+    }
+) {
+    
+    // Initialize output variables
+    MAP {
+        set successfulRecipients = [];
+        set failedRecipients = [];
+        set results = [];
+        set status = "SUCCESS";
+        set message = "Email sending process initiated";
+    };
+    
+    // Validate input parameters
+    SEQUENCE {
+        comment: "Validate required input parameters";
+        
+        IF (recipientList) {
+            MAP {
+                set status = "FAILURE";
+                set message = "Recipient list is empty or null";
+            };
+            EXIT {
+                signal: "FAILURE";
+                failureMessage: "No recipients provided";
+            };
+        };
+        
+        IF (subject == null || subject == "") {
+            MAP {
+                set status = "FAILURE";
+                set message = "Subject is required";
+            };
+            EXIT {
+                signal: "FAILURE";
+                failureMessage: "Subject cannot be empty";
+            };
+        };
+    };
+    
+    // Set default values for optional parameters
+    MAP {
+        comment: "Set default values";
+        set contentType = "text/html";
+        set charset = "UTF-8";
+        set mailhostPort = "25";
+    };
+    
+    // Create MIME data for email body
+    INVOKE pub.mime:createMimeData {
+        comment: "Create MIME data structure for email";
+        input {
+            copy emailBody -> input;
+            set subType = "mixed";
+        }
+        output {
+            copy mimeData -> mimeData;
+        }
+    };
+    
+    // Add MIME headers
+    MAP {
+        comment: "Prepare MIME headers";
+        mapTarget {
+            record mimeHeader {
+                String Content-Type;
+                String Content-Transfer-Encoding;
+            };
+        }
+        set mimeHeader/Content-Type = contentType;
+        set mimeHeader/Content-Transfer-Encoding = "quoted-printable";
+    };
+    
+    INVOKE pub.mime:addMimeHeader {
+        comment: "Add headers to MIME data";
+        input {
+            copy mimeData -> mimeData;
+            copy mimeHeader -> mimeHeader;
+        }
+        output {
+            copy mimeData -> mimeData;
+        }
+    };
+    
+    // Add body part with email content
+    INVOKE pub.mime:addBodyPart {
+        comment: "Add email body as MIME body part";
+        input {
+            copy mimeData -> mimeData;
+            copy emailBody -> content;
+            set contenttype = contentType;
+            set encoding = "quoted-printable";
+            set multipart = "true";
+        }
+        output {
+            copy mimeData -> mimeData;
+        }
+    };
+    
+    // Add attachments if provided
+    IF (attachments != null) {
+        LOOP {
+            comment: "Process each attachment";
+            inputArray: "attachments";
+            outputArray: "processedAttachments";
+            
+            INVOKE pub.mime:addBodyPart {
+                comment: "Add attachment as body part";
+                input {
+                    copy mimeData -> mimeData;
+                    copy attachments/content -> content;
+                    copy attachments/contentType -> contenttype;
+                    set encoding = "base64";
+                    set multipart = "true";
+                }
+                output {
+                    copy mimeData -> mimeData;
+                }
+            };
+        };
+    };
+    
+    // Get MIME stream for sending
+    INVOKE pub.mime:getEnvelopeStream {
+        comment: "Convert MIME data to stream for transmission";
+        input {
+            copy mimeData -> mimeData;
+        }
+        output {
+            copy mimeStream -> mimeStream;
+        }
+    };
+    
+    // Loop through recipients and send email to each
+    LOOP {
+        comment: "Send email to each recipient in the list";
+        inputArray: "recipientList";
+        outputArray: "emailResults";
+        
+        TRY {
+            comment: "Attempt to send email to recipient";
+            
+            // Prepare recipient-specific data
+            MAP {
+                copy recipientList -> currentRecipient;
+            };
+            
+            // Convert CC and BCC arrays to comma-separated strings
+            SEQUENCE {
+                IF (ccList != null) {
+                    MAP {
+                        comment: "Join CC list";
+                        // Note: In real implementation, use pub.string:join or similar
+                        copy ccList -> ccString;
+                    };
+                };
+                
+                IF (bccList != null) {
+                    MAP {
+                        comment: "Join BCC list";
+                        copy bccList -> bccString;
+                    };
+                };
+            };
+            
+            // Send email via SMTP
+            INVOKE pub.client:smtp {
+                comment: "Send email using SMTP protocol";
+                input {
+                    copy currentRecipient -> to;
+                    copy ccString -> cc;
+                    copy bccString -> bcc;
+                    copy subject -> subject;
+                    copy from -> from;
+                    copy mailhost -> mailhost;
+                    copy mailhostPort -> mailhostPort;
+                    copy mimeStream -> mimeStream;
+                    copy auth -> auth;
+                    copy secure -> secure;
+                    set charset = charset;
+                    set subjectCharset = charset;
+                }
+                output {
+                    copy status -> emailStatus;
+                }
+            };
+            
+            // Record successful send
+            MAP {
+                comment: "Add to successful recipients list";
+                mapTarget {
+                    record resultEntry {
+                        String recipient;
+                        String status;
+                        String errorMessage;
+                    };
+                }
+                copy currentRecipient -> resultEntry/recipient;
+                set resultEntry/status = "SUCCESS";
+                set resultEntry/errorMessage = "";
+            };
+            
+            // Append to results array
+            MAP {
+                copy resultEntry -> results;
+                copy currentRecipient -> successfulRecipients;
+            };
+            
+        } CATCH {
+            comment: "Handle email sending failure";
+            
+            MAP {
+                comment: "Record failed recipient";
+                mapTarget {
+                    record resultEntry {
+                        String recipient;
+                        String status;
+                        String errorMessage;
+                    };
+                }
+                copy currentRecipient -> resultEntry/recipient;
+                set resultEntry/status = "FAILURE";
+                copy $error -> resultEntry/errorMessage;
+            };
+            
+            MAP {
+                copy resultEntry -> results;
+                copy currentRecipient -> failedRecipients;
+            };
+        };
+    };
+    
+    // Prepare final status message
+    SEQUENCE {
+        comment: "Generate final status report";
+        
+        MAP {
+            comment: "Count successful and failed sends";
+            mapSource {
+                String[] successfulRecipients;
+                String[] failedRecipients;
+            }
+            // In real implementation, use pub.list:size or similar
+        };
+        
+        IF (failedRecipients) {
+            MAP {
+                set status = "PARTIAL_SUCCESS";
+                set message = "Email sent to some recipients, but some failed";
+            };
+        } ELSEIF (successfulRecipients) {
+            MAP {
+                set status = "FAILURE";
+                set message = "Failed to send email to all recipients";
+            };
+        } ELSE {
+            MAP {
+                set status = "SUCCESS";
+                set message = "Email successfully sent to all recipients";
+            };
+        };
+    };
+}

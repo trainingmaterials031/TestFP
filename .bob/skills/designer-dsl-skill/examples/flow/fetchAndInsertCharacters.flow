@@ -1,0 +1,151 @@
+interface jdbc;
+service fetchAndInsertCharacters (
+    input {
+        String pageSize;
+    }
+    output {
+        String status;
+        String message;
+        Integer totalInserted;
+    }
+) {
+    TRY {
+        // Step 1: Call the REST API to get characters
+        INVOKE pub.client:http {
+            input {
+                set url = "https://anapioficeandfire.com/api/characters";
+                set method = "GET";
+                set timeout = "30000";
+                set loadAs = "stream";
+            }
+        };
+        
+        // Step 2: Convert stream to string
+        INVOKE pub.io:streamToString {
+            input {
+                copy body/stream -> inputStream;
+            }
+        };
+        
+        // Step 3: Parse JSON string to document array
+        INVOKE pub.json:jsonStringToDocument {
+            input {
+                copy string -> jsonString;
+            }
+        };
+        
+        // Step 4: Initialize counter
+        MAP {
+            set totalInserted = 0;
+        };
+        
+        // Step 5: Loop through characters array and insert each
+        LOOP {
+            inputArray: "document";
+            
+            // Convert arrays to JSON strings for TEXT fields
+            INVOKE pub.json:documentToJSONString {
+                input {
+                    copy titles -> document;
+                }
+                output {
+                    copy jsonString -> titlesJson;
+                }
+            };
+            
+            INVOKE pub.json:documentToJSONString {
+                input {
+                    copy aliases -> document;
+                }
+                output {
+                    copy jsonString -> aliasesJson;
+                }
+            };
+            
+            INVOKE pub.json:documentToJSONString {
+                input {
+                    copy allegiances -> document;
+                }
+                output {
+                    copy jsonString -> allegiancesJson;
+                }
+            };
+            
+            INVOKE pub.json:documentToJSONString {
+                input {
+                    copy books -> document;
+                }
+                output {
+                    copy jsonString -> booksJson;
+                }
+            };
+            
+            INVOKE pub.json:documentToJSONString {
+                input {
+                    copy povBooks -> document;
+                }
+                output {
+                    copy jsonString -> povBooksJson;
+                }
+            };
+            
+            INVOKE pub.json:documentToJSONString {
+                input {
+                    copy tvSeries -> document;
+                }
+                output {
+                    copy jsonString -> tvSeriesJson;
+                }
+            };
+            
+            INVOKE pub.json:documentToJSONString {
+                input {
+                    copy playedBy -> document;
+                }
+                output {
+                    copy jsonString -> playedByJson;
+                }
+            };
+            
+            // Insert character into database
+            INVOKE demo:insertCharacter {
+                input {
+                    copy url -> url;
+                    copy name -> name;
+                    copy gender -> gender;
+                    copy culture -> culture;
+                    copy born -> born;
+                    copy died -> died;
+                    copy titlesJson -> titles;
+                    copy aliasesJson -> aliases;
+                    copy father -> father;
+                    copy mother -> mother;
+                    copy spouse -> spouse;
+                    copy allegiancesJson -> allegiances;
+                    copy booksJson -> books;
+                    copy povBooksJson -> povBooks;
+                    copy tvSeriesJson -> tvSeries;
+                    copy playedByJson -> playedBy;
+                }
+            };
+            
+            // Increment counter
+            MAP {
+                set totalInserted = "%totalInserted% + 1";
+            };
+        };
+        
+        // Set success response
+        MAP {
+            set status = "SUCCESS";
+            set message = "Characters fetched and inserted successfully";
+        };
+    }
+    CATCH {
+        MAP {
+            copy $error -> errorMessage;
+            set status = "FAILURE";
+            set message = "Error occurred while processing characters";
+        };
+    };
+}

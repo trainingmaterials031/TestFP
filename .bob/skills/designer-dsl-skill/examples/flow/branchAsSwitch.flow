@@ -1,0 +1,89 @@
+service branchAsSwitch (
+    input {
+        String day;
+    }
+    output {
+        String dayStr;
+    }
+) {
+    BRANCH {
+        switch: "/day";
+        SEQUENCE {
+            label: "1";
+            MAP {
+                mapTarget {
+                    String day;
+                    String dayStr;
+                }
+                set dayStr = SUNDAY;
+            };
+        };
+        SEQUENCE {
+            label: "2";
+            MAP {
+                mapTarget {
+                    String day;
+                    String dayStr;
+                }
+                set dayStr = MONDAY;
+            };
+        };
+        SEQUENCE {
+            label: "3";
+            MAP {
+                mapTarget {
+                    String day;
+                    String dayStr;
+                }
+                set dayStr = TUESDAY;
+            };
+        };
+        SEQUENCE {
+            label: "4";
+            MAP {
+                mapTarget {
+                    String day;
+                    String dayStr;
+                }
+                set dayStr = WEDNESDAY;
+            };
+        };
+        SEQUENCE {
+            label: "5";
+            MAP {
+                mapTarget {
+                    String day;
+                    String dayStr;
+                }
+                set dayStr = THURSDAY;
+            };
+        };
+        SEQUENCE {
+            label: "6";
+            MAP {
+                mapTarget {
+                    String day;
+                    String dayStr;
+                }
+                set dayStr = FRIDAY;
+            };
+        };
+        SEQUENCE {
+            label: "7";
+            MAP {
+                mapTarget {
+                    String day;
+                    String dayStr;
+                }
+                set dayStr = SATURDAY;
+            };
+        };
+    };
+    MAP {
+        mapSource {
+            String day;
+            String dayStr;
+        }
+        drop day;
+    };
+}

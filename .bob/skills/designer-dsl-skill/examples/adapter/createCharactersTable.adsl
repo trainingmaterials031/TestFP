@@ -1,0 +1,39 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// webMethods JDBC Adapter Service DSL
+// Template  : CustomSQL
+// Description: Creates the characters table for storing Game of Thrones character data
+//              from the API (https://anapioficeandfire.com/api/characters)
+// ─────────────────────────────────────────────────────────────────────────────
+
+adapterService createCharactersTable {
+
+    connection : "abc:mysql";
+    template   : CustomSQL;
+
+    CUSTOM_SQL {
+        sql : "CREATE TABLE IF NOT EXISTS got.characters (
+    character_id INT AUTO_INCREMENT PRIMARY KEY,
+    url VARCHAR(255) NOT NULL,
+    name VARCHAR(255),
+    gender VARCHAR(50),
+    culture VARCHAR(100),
+    born VARCHAR(255),
+    died VARCHAR(255),
+    titles TEXT,
+    aliases TEXT,
+    father VARCHAR(255),
+    mother VARCHAR(255),
+    spouse VARCHAR(255),
+    allegiances TEXT,
+    books TEXT,
+    povBooks TEXT,
+    tvSeries TEXT,
+    playedBy TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+)";
+        MAX_ROWS      : 0;
+        QUERY_TIMEOUT : -1;
+    }
+
+}

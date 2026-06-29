@@ -1,0 +1,188 @@
+interface test;
+service fs22 (
+    input {
+        String pageSize;
+    }
+    output {
+        String status;
+        String message;
+        Integer totalInserted;
+        recordList posts {
+            String userId;
+            String id;
+            String title;
+            String body;
+        };
+    }
+) {
+    TRY {
+        INVOKE pub.client:http {
+            input {
+                mapTarget[httpInput] {
+                    String url;
+                    String method;
+                    String loadAs;
+                    record data;
+                    record auth;
+                    record headers;
+                    String timeout;
+                    String connectTimeout;
+                    String maxKeepAliveConnections;
+                    String keepAliveTimeout;
+                    String newSession;
+                    String trustStore;
+                    String keyStoreAlias;
+                    String keyAlias;
+                    String hostNameVerification;
+                    String cipherSuites;
+                    String checkCRL;
+                    String proxyAlias;
+                    String followRedirect;
+                    String compressionEnabled;
+                }
+                set timeout = "30000";
+                set url = "https://jsonplaceholder.typicode.com/posts";
+                set method = "get";
+                set loadAs = "stream";
+            }
+        };
+        INVOKE pub.io:streamToString {
+            input {
+                mapSource {
+                    String url;
+                    String method;
+                    String loadAs;
+                    String pageSize;
+                    record document;
+                    String timeout;
+                    String encodedURL;
+                    record header;
+                    record body {
+                        Object bytes;
+                        Object stream;
+                    };
+                }
+                mapTarget[streamToStringInput] {
+                    Object inputStream;
+                    String encoding;
+                }
+                copy body/stream -> inputStream;
+            }
+        };
+        INVOKE pub.json:jsonStringToDocument {
+            input {
+                mapSource {
+                    Object inputStream;
+                    String url;
+                    String method;
+                    String loadAs;
+                    String pageSize;
+                    record document;
+                    String timeout;
+                    String encodedURL;
+                    record header;
+                    record body;
+                    String string;
+                }
+                mapTarget[jsonStringToDocumentInput] {
+                    String jsonString;
+                    String jsonDocumentTypeName;
+                    String strict;
+                    String decodeRealAsDouble;
+                    String decodeIntegerAsLong;
+                    String decodeRealAsString;
+                    String decodeNullRootAsEmpty;
+                    String unescapeSpecialChars;
+                }
+                copy string -> jsonString;
+            }
+        };
+        MAP {
+            mapSource {
+                String jsonString;
+                Object inputStream;
+                String url;
+                String method;
+                String loadAs;
+                String pageSize;
+                String timeout;
+                String encodedURL;
+                record header;
+                record body;
+                String string;
+                record document {
+                    recordList $rootArray {
+                    };
+                };
+            }
+            mapTarget {
+                String jsonString;
+                recordList posts {
+                    String userId;
+                    String id;
+                    String title;
+                    String body;
+                };
+                Object inputStream;
+                String url;
+                String method;
+                String loadAs;
+                String pageSize;
+                String timeout;
+                String encodedURL;
+                record header;
+                record body;
+                String string;
+                record document;
+            }
+            copy document/$rootArray -> posts;
+        };
+    }CATCH {
+        MAP {
+            mapSource {
+                record insertCharacterInput;
+                String jsonString;
+                Object inputStream;
+                String url;
+                String method;
+                String loadAs;
+                String pageSize;
+                record document;
+                String timeout;
+                String encodedURL;
+                record header;
+                record body;
+                String string;
+                Integer totalInserted;
+                record insertCharacterOutput;
+                String status;
+                String message;
+                String $error;
+            }
+            mapTarget {
+                record insertCharacterInput;
+                String jsonString;
+                Object inputStream;
+                String url;
+                String method;
+                String loadAs;
+                String pageSize;
+                record document;
+                String timeout;
+                String encodedURL;
+                record header;
+                record body;
+                String string;
+                Integer totalInserted;
+                record insertCharacterOutput;
+                String status;
+                String message;
+                String $error;
+                String errorMessage;
+            }
+            copy $error -> errorMessage;
+            set status = "FAILURE";
+            set message = "Error occurred while processing characters";
+        };
+    };
+}

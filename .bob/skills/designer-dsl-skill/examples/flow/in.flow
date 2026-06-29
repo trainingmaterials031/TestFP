@@ -1,0 +1,129 @@
+interface MCDAuthUserSmallBusiness.Utilities.FlowServices;
+service convertDate (
+    input {
+        String inDate;
+        String inPattern;
+        String outPattern;
+    }
+    output {
+        String outDate;
+    }
+) {
+    BRANCH {
+        switch: "/inDate";
+        SEQUENCE {
+            label: "$default";
+            INVOKE pub.string:substring {
+                input {
+                    copy inDate -> inString;
+                    set beginIndex = "0";
+                    set endIndex = "1";
+                }
+                output {
+                    copy value -> valueTest;
+                    drop inString;
+                    drop beginIndex;
+                    drop endIndex;
+                    drop value;
+                }
+            };
+            BRANCH {
+                switch: "/valueTest";
+                MAP {
+                    label: "$null";
+                    mapSource {
+                        String inDate;
+                        String valueTest;
+                        String inPattern;
+                        String outPattern;
+                    }
+                    mapTarget {
+                        String inDate;
+                        String valueTest;
+                        String inPattern;
+                        String outDate;
+                        String outPattern;
+                    }
+                    copy inDate -> outDate;
+                };
+                MAP {
+                    label: "''";
+                    mapSource {
+                        String inDate;
+                        String valueTest;
+                        String inPattern;
+                        String outPattern;
+                    }
+                    mapTarget {
+                        String inDate;
+                        String valueTest;
+                        String inPattern;
+                        String outDate;
+                        String outPattern;
+                    }
+                    copy inDate -> outDate;
+                };
+                MAP {
+                    mapSource {
+                        String inDate;
+                        String valueTest;
+                        String inPattern;
+                        String outPattern;
+                    }
+                    mapTarget {
+                        String inDate;
+                        String valueTest;
+                        String inPattern;
+                        String outDate;
+                        String outPattern;
+                    }
+                    copy inDate -> outDate;
+                };
+                INVOKE pub.date:dateTimeFormat {
+                    label: "$default";
+                    input {
+                        copy inDate -> inString;
+                        copy inPattern -> currentPattern;
+                        copy outPattern -> newPattern;
+                    }
+                    output {
+                        copy value -> outDate;
+                        drop currentPattern;
+                        drop newPattern;
+                        drop inString;
+                        drop value;
+                    }
+                };
+            };
+        };
+        SEQUENCE {
+            label: "00000000";
+            MAP {
+                mapSource {
+                    String inDate;
+                    String valueTest;
+                    String inPattern;
+                    String outDate;
+                    String outPattern;
+                }
+                drop inDate;
+                drop valueTest;
+                drop inPattern;
+                drop outDate;
+                drop outPattern;
+            };
+        };
+    };
+    MAP {
+        mapSource {
+            String inDate;
+            String valueTest;
+            String inPattern;
+            String outPattern;
+        }
+        drop valueTest;
+        drop inDate;
+        drop inPattern;
+        drop outPattern;
+    };
+}

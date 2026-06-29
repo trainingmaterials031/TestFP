@@ -1,0 +1,56 @@
+// FlatFile Schema: delimited-escape-chars
+// Description: Delimited format with escape and release characters
+// Sample Data: delimited-escape-chars-data.txt
+//
+// Structure:
+// - Record delimiter: newline
+// - Field delimiter: pipe (|)
+// - Release character: backslash (\) - escapes special characters
+// - Quoted release: double quote (") - for quoted strings
+// - Fields: Field1, Field2, Field3, Field4
+//
+// Notes:
+// - Supports escaped delimiters: \| becomes |
+// - Supports escaped backslashes: \\ becomes \
+// - Supports quoted strings with escaped quotes: "He said \"Hello\""
+// - Supports newlines in quoted strings: "Line1\nLine2"
+
+flatfile schema delimited_escape_chars {
+    type: DELIMITED;
+    
+    // Delimiter Configuration
+    delimiters {
+        record = "\n"
+        field = "|"
+        release = "\\"
+        quotedRelease = "\""
+    }
+    recordIdentifier {
+        type = "NthField"
+        offset = 0
+        validateWithoutRecordIdentifier= true
+    }
+    
+    // Record Definition
+    record delimited_escape_chars {
+        field Field1 {
+            data_type: String;
+            index: 0;
+        }
+        
+        field Field2 {
+            data_type: String;
+            index: 1;
+        }
+        
+        field Field3 {
+            data_type: String;
+            index: 2;
+        }
+        
+        field Field4 {
+            data_type: String;
+            index: 3;
+        }
+    }
+}

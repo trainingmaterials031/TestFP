@@ -1,0 +1,20 @@
+interface samplePackage;
+
+document DocumentListExample {
+    String OrderId;
+    String OrderDate;
+    String TotalAmount;
+    record[] LineItems {
+        String ItemId;
+        String ItemName;
+        String Quantity;
+        String UnitPrice;
+        String LineTotal;
+    };
+    record[] ShipmentDetails {
+        String TrackingNumber;
+        String Carrier;
+        String ShipDate;
+        String Status;
+    };
+};

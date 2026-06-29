@@ -1,0 +1,53 @@
+// FlatFile Schema: delimited-composite-field
+// Description: Delimited format with composite field containing subfields
+// Sample Data: delimited-composite-field-data.txt
+//
+// Structure:
+// - Record delimiter: newline
+// - Field delimiter: comma (,)
+// - Subfield delimiter: pipe (|)
+// - Fields: empID, name, contact (composite with pin and email subfields)
+
+flatfile schema delimited_composite_field {
+    type: DELIMITED;
+    
+    // Delimiter Configuration
+    delimiters {
+        record = "\r\n"
+        field = ","
+        subfield = "|"
+    }
+    recordIdentifier {
+        type = "NthField"
+        offset = 0
+        validateWithoutRecordIdentifier= true
+    }
+    
+    // Record Definition
+    record delimited_composite_field {
+        field empID {
+            data_type: String;
+            index: 0;
+        }
+        
+        field name {
+            data_type: String;
+            index: 1;
+        }
+        
+        // Composite field with subfields
+        composite contact {
+            index: 2;
+            
+            field pin {
+                data_type: String;
+                index: 0;
+            }
+            
+            field email {
+                data_type: String;
+                index: 1;
+            }
+        }
+    }
+}

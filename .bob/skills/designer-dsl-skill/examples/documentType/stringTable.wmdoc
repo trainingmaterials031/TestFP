@@ -1,0 +1,8 @@
+interface samplePackage;
+
+document StringTableExample {
+    String ReportId;
+    String ReportDate;
+    String[][] PricingMatrix;
+    String[][] ScheduleGrid;
+};

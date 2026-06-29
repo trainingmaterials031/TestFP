@@ -1,0 +1,53 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// webMethods JDBC Adapter Service DSL
+// Template  : InsertSQL
+// Description: Inserts a new student record into ldev.student.
+//              All column values are supplied from the pipeline (parameters).
+// ─────────────────────────────────────────────────────────────────────────────
+
+adapterService insertStudent {
+
+    connection : "connections:jdbcconn";
+    template   : InsertSQL;
+
+    INSERT {
+
+        INTO : "ldev.student";
+
+        // Column definitions: columnName  jdbcType  FROM  pipelineFieldName
+        COLUMNS {
+            first_name      VARCHAR   FROM first_name;
+            last_name       VARCHAR   FROM last_name;
+            gender          VARCHAR   FROM gender;
+            date_of_birth   DATE      FROM date_of_birth;
+            email           VARCHAR   FROM email;
+            phone           VARCHAR   FROM phone;
+            address         TEXT      FROM address;
+            enrollment_date DATE      FROM enrollment_date;
+            class_id        INTEGER   FROM class_id;
+        }
+
+    }
+
+    signature {
+
+        input {
+            String  first_name      [required];
+            String  last_name       [required];
+            String  gender          [required];
+            String  date_of_birth   [optional];
+            String  email           [optional];
+            String  phone           [optional];
+            String  address         [optional];
+            String  enrollment_date [optional];
+            Integer class_id        [required];
+        }
+
+        output {
+            // rowsAffected: number of rows inserted (1 on success)
+            Integer rowsAffected;
+        }
+
+    }
+
+}

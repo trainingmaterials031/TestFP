@@ -1,0 +1,58 @@
+service tryCatchService (
+    input {
+        String n1;
+        String n2;
+    }
+    output {
+        String error;
+        String result;
+    }
+) {
+    TRY {
+        INVOKE pub.math:divideInts {
+            input {
+                mapSource {
+                    String n1;
+                    String n2;
+                }
+                mapTarget[divideIntsInput] {
+                    String num1;
+                    String num2;
+                }
+                copy n1 -> num1;
+                copy n2 -> num2;
+            }
+        };
+    }CATCH {
+        INVOKE pub.flow:getLastError {
+            input {
+            }
+            output {
+            }
+        };
+    }FINALLY {
+        MAP {
+            mapSource {
+                String num1;
+                String num2;
+                String n1;
+                String n2;
+                String value;
+            }
+            mapTarget {
+                String n1;
+                String block;
+                String n2;
+                String value;
+                String error;
+                String result;
+            }
+            set block = "FINALLY BLOCK";
+            copy lastError/error -> error;
+            drop lastError;
+            copy value -> value;
+            drop num1;
+            drop num2;
+        };
+    };
+}
